@@ -1,4 +1,12 @@
-# suilens-microservice-tutorial
+# ⚡ Tugas 3 - On Premise (SuiLens)
+
+**Mata Kuliah:** CSCE604271 — Arsitektur Aplikasi Web  
+**Nama:** Darryl Abysha Artapradana Subiyanto  
+**NPM:** 2206082846  
+
+---
+
+# Bagian 1: SETUP - suilens-microservice-tutorial
 
 Microservices tutorial implementation for Assignment 1 Part 2.2.
 
@@ -41,3 +49,36 @@ docker compose logs notification-service --tail 20
 ```bash
 docker compose down
 ```
+
+---
+
+# Bagian 2: Implementasi OpenAPI
+
+Berikut adalah dokumentasi OpenAPI (Swagger) untuk masing-masing *service* yang telah diimplementasikan:
+
+- **Catalog Service:**
+  GET /api/lenses, GET /api/lenses/:id, GET /health
+  ![alt text](image.png)
+
+
+- **Order Service:**
+  POST /api/orders, GET /api/orders, GET /api/orders/:id, GET /health
+  ![alt text](image-1.png)
+
+- **Notification Service:**
+  GET /api/notifications, GET /health
+  ![alt text](image-2.png)
+
+---
+
+## Bagian 3: Implementasi WebSocket & Smoke Test
+
+Fitur WebSocket telah diimplementasikan sehingga notifikasi pesanan baru dapat langsung muncul pada *frontend* secara *real-time* tanpa perlu memuat ulang halaman.
+
+Berikut adalah hasil eksekusi *smoke test* menggunakan data pribadi:
+
+**1. Kondisi Frontend Sebelum POST Data:**
+
+**2. Eksekusi POST Data (Smoke Test):**
+
+**3. Kondisi Frontend Setelah POST Data (Notifikasi WebSocket Berhasil):**
