@@ -78,7 +78,35 @@ Fitur WebSocket telah diimplementasikan sehingga notifikasi pesanan baru dapat l
 Berikut adalah hasil eksekusi *smoke test* menggunakan data pribadi:
 
 **1. Kondisi Frontend Sebelum POST Data:**
+![alt text](image-3.png)
 
 **2. Eksekusi POST Data (Smoke Test):**
 
+```bash
+curl http://localhost:3001/api/lenses | jq
+LENS_ID=$(curl -s http://localhost:3001/api/lenses | jq -r '.[0].id')
+
+curl -X POST http://localhost:3002/api/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerName": "Darryl Abysha",
+    "customerEmail": "darryl.abysha@example.com",
+    "lensId": "'"$LENS_ID"'",
+    "startDate": "2025-03-01",
+    "endDate": "2025-03-05"
+  }' | jq
+
+docker compose logs notification-service --tail 20
+```
+![alt text](image-4.png)
+
 **3. Kondisi Frontend Setelah POST Data (Notifikasi WebSocket Berhasil):**
+![alt text](image-5.png)
+
+---
+
+## Bagian 4: Deployment Kubernetes
+**1. Setup Repository pada VM:**
+![alt text](image-6.png) 
+
+**2. Deploy Aplikasi:**

@@ -1,0 +1,240 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: suilens-2206082846
+---
+# --- RABBITMQ ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: suilens-2206082846
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3.13-management-alpine
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: suilens-2206082846
+spec:
+  ports:
+  - port: 5672
+    targetPort: 5672
+    name: amqp
+  - port: 15672
+    targetPort: 15672
+    name: management
+  selector:
+    app: rabbitmq
+
+---
+# --- DATABASES (Catalog, Order, Notification) ---
+# Menggunakan satu deployment postgres dengan multiple DB untuk efisiensi cluster tutorial
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: suilens-db
+  namespace: suilens-2206082846
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: suilens-db
+  template:
+    metadata:
+      labels:
+        app: suilens-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        env:
+        - name: POSTGRES_PASSWORD
+          value: supersecretpass # Samakan dengan DATABASE_URL di bawah
+        ports:
+        - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-db
+  namespace: suilens-2206082846
+spec:
+  ports: [{port: 5432}]
+  selector: {app: suilens-db}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-db
+  namespace: suilens-2206082846
+spec:
+  ports: [{port: 5432}]
+  selector: {app: suilens-db}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-db
+  namespace: suilens-2206082846
+spec:
+  ports: [{port: 5432}]
+  selector: {app: suilens-db}
+
+---
+# --- CATALOG SERVICE ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+  namespace: suilens-2206082846
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+      - name: catalog-service
+        image: darrylabysha/catalog-service:latest
+        env:
+        - name: DATABASE_URL
+          value: postgres://catalog:catalog@catalog-db:5432/catalog
+        ports:
+        - containerPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+  namespace: suilens-2206082846
+spec:
+  ports: [{port: 3001, targetPort: 3001}]
+  selector: {app: catalog-service}
+
+---
+# --- ORDER SERVICE ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: suilens-2206082846
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - name: order-service
+        image: darrylabysha/order-service:latest
+        env:
+        - name: DATABASE_URL
+          value: postgres://orders:orders@order-db:5432/orders
+        - name: CATALOG_SERVICE_URL
+          value: http://catalog-service:3001
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@rabbitmq:5672
+        ports:
+        - containerPort: 3002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: suilens-2206082846
+spec:
+  ports: [{port: 3002, targetPort: 3002}]
+  selector: {app: order-service}
+
+---
+# --- NOTIFICATION SERVICE ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: suilens-2206082846
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: darrylabysha/notification-service:latest
+        env:
+        - name: DATABASE_URL
+          value: postgres://notifications:notifications@notification-db:5432/notifications
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@rabbitmq:5672
+        ports:
+        - containerPort: 3003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: suilens-2206082846
+spec:
+  ports: [{port: 3003, targetPort: 3003}]
+  selector: {app: notification-service}
+
+---
+# --- FRONTEND ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: suilens-2206082846
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: darrylabysha/frontend:latest
+        ports:
+        - containerPort: 5173
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: suilens-2206082846
+spec:
+  ports: [{port: 5173, targetPort: 5173}]
+  selector: {app: frontend}
