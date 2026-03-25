@@ -60,7 +60,6 @@ Berikut adalah dokumentasi OpenAPI (Swagger) untuk masing-masing *service* yang 
   GET /api/lenses, GET /api/lenses/:id, GET /health
   ![alt text](image.png)
 
-
 - **Order Service:**
   POST /api/orders, GET /api/orders, GET /api/orders/:id, GET /health
   ![alt text](image-1.png)
@@ -71,7 +70,7 @@ Berikut adalah dokumentasi OpenAPI (Swagger) untuk masing-masing *service* yang 
 
 ---
 
-## Bagian 3: Implementasi WebSocket & Smoke Test
+# Bagian 3: Implementasi WebSocket & Smoke Test
 
 Fitur WebSocket telah diimplementasikan sehingga notifikasi pesanan baru dapat langsung muncul pada *frontend* secara *real-time* tanpa perlu memuat ulang halaman.
 
@@ -105,10 +104,29 @@ docker compose logs notification-service --tail 20
 
 ---
 
-## Bagian 4: Deployment Kubernetes
-**1. Setup Repository pada VM:**
+# Bagian 4: Deployment Kubernetes
+**1. Setup Repository pada VM (Menggunakan VM dari Latihan sebelumnya):**
 ![alt text](image-6.png) 
 
 **2. Deploy Aplikasi:**
-![alt text](image-8.png)
-![alt text](image-7.png)
+![alt text](image-9.png)
+
+![alt text](image-10.png)
+
+- **Catalog Service:**
+  ![alt text](image.png)
+
+- **Order Service:**
+  ![alt text](image-1.png)
+
+- **Notification Service:**
+  ![alt text](image-2.png)
+
+---
+
+# AI Usage Declaration
+- **Setup Infrastruktur & VM:** AI digunakan untuk memandu konfigurasi Ubuntu Server di Virtual Machine, proses instalasi cluster Kubernetes melalui kubeadm, serta pengaturan node agar siap menjalankan beban kerja aplikasi.
+
+- **Migrasi & Deployment:** Membantu transformasi arsitektur dari Docker Compose ke Kubernetes Manifest (suilens.yaml), termasuk optimasi alokasi memori dan penyimpanan untuk mencegah kegagalan sistem akibat keterbatasan resource pada node.
+
+- **Debugging & Troubleshooting:** Digunakan sebagai asisten analisis untuk mendiagnosis status Pod yang bermasalah, serta memberikan instruksi pembersihan sistem dan Port Forwarding untuk akses aplikasi.
