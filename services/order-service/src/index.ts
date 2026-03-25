@@ -4,6 +4,7 @@ import { db } from "./db";
 import { orders } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { publishEvent } from "./events";
+import { swagger } from "@elysiajs/swagger";
 
 const CATALOG_SERVICE_URL =
   process.env.CATALOG_SERVICE_URL || "http://localhost:3001";
@@ -17,6 +18,18 @@ interface CatalogLens {
 
 const app = new Elysia()
   .use(cors())
+  .use(
+    swagger({
+      path: "/docs",
+      documentation: {
+        info: {
+          title: "SuiLens Order Service API",
+          version: "1.0.0",
+          description: "API for placing and managing lens orders",
+        },
+      },
+    })
+  )
   .post(
     "/api/orders",
     async ({ body }) => {

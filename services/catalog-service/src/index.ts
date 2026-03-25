@@ -3,9 +3,22 @@ import { cors } from "@elysiajs/cors";
 import { db } from "./db";
 import { lenses } from "./db/schema";
 import { eq } from "drizzle-orm";
+import { swagger } from "@elysiajs/swagger";
 
 const app = new Elysia()
   .use(cors())
+  .use(
+    swagger({
+      path: "/docs",
+      documentation: {
+        info: {
+          title: "SuiLens Catalog Service API",
+          version: "1.0.0",
+          description: "API for managing camera lens catalog",
+        },
+      },
+    })
+  )
   .get("/api/lenses", async () => {
     return db.select().from(lenses);
   })
