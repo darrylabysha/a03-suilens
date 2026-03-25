@@ -110,3 +110,4 @@ docker compose logs notification-service --tail 20
 ![alt text](image-6.png) 
 
 **2. Deploy Aplikasi:**
+![alt text](image-7.png)
