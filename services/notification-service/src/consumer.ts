@@ -1,6 +1,7 @@
 import amqplib from "amqplib";
 import { db } from "./db";
 import { notifications } from "./db/schema";
+import { app } from "./index";
 
 const RABBITMQ_URL =
   process.env.RABBITMQ_URL || "amqp://guest:guest@localhost:5672";
@@ -34,6 +35,7 @@ export async function startConsumer() {
             const { orderId, customerName, customerEmail, lensName } =
               event.data;
 
+            // 1. Simpan ke Database (Sudah ada)
             await db.insert(notifications).values({
               orderId,
               type: "order_placed",
@@ -42,8 +44,22 @@ export async function startConsumer() {
             });
 
             console.log(`Notification recorded for order ${orderId}`);
-          }
 
+            // 2. TAMBAHKAN INI: Kirim ke WebSocket (Broadcast)
+            // Format disesuaikan agar dibaca oleh frontend Elena
+            app.server?.publish("notifications", JSON.stringify({
+              event: "order.placed", // Trigger filter di frontend
+              data: {
+                customerName: customerName,
+                lensName: lensName,
+                orderId: orderId
+              },
+              timestamp: new Date().toISOString()
+            }));
+
+            console.log(`Broadcasted order.placed to WebSocket for ${customerName}`);
+          }
+          
           channel.ack(msg);
         } catch (error) {
           console.error("Error processing message:", error);

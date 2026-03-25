@@ -46,9 +46,57 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 const notifications = ref([]);
+const isConnected = ref(false);
+
+// Sesuaikan URL dengan port notification-service kamu (3003)
+const WS_URL = "ws://localhost:3003/ws";
+
+let ws = null;
+
+function connectWebSocket() {
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    isConnected.value = true;
+    console.log("✅ Terhubung ke WebSocket");
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      
+      // Filter agar hanya event order.placed yang muncul
+      if (payload?.event === "order.placed") {
+        // Masukkan ke array (data terbaru di atas)
+        notifications.value.unshift({
+          ...payload,
+          timestamp: payload.timestamp || new Date().toISOString()
+        });
+        
+        // Batasi maksimal 10 notifikasi agar tidak penuh
+        if (notifications.value.length > 10) notifications.value.pop();
+      }
+    } catch (e) {
+      console.error("Gagal membaca pesan:", e);
+    }
+  };
+
+  ws.onclose = () => {
+    isConnected.value = false;
+    console.log("❌ WebSocket terputus");
+  };
+}
+
+onMounted(() => {
+  connectWebSocket();
+});
+
+onBeforeUnmount(() => {
+  if (ws) ws.close();
+});
 
 function formatTime(timestamp) {
   const date = new Date(timestamp);
